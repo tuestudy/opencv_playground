@@ -1,20 +1,46 @@
+import glob
+import itertools
+import os
+
 import cv2
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-cap = cv2.VideoCapture(0)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    faces = face_cascade.detectMultiScale(frame,
-                                          scaleFactor=1.1,
-                                          minNeighbors=3,
-                                          minSize=(30, 30),
-                                          flags=cv2.CASCADE_SCALE_IMAGE)
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    cv2.imshow('frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+haar = next(itertools.chain(
+    glob.iglob('/usr/local/Cellar/opencv*/*/share/OpenCV/haarcascades'),
+    glob.iglob('/usr/share/opencv/haarcascades'),
+))
 
-cap.release()
-cv2.destroyAllWindows()
+face_cascade = cv2.CascadeClassifier(
+    os.path.join(haar, 'haarcascade_frontalface_default.xml'))
+eye_cascade = cv2.CascadeClassifier(
+    os.path.join(haar, 'haarcascade_eye.xml'))
+
+
+def face_detect(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    for x, y, w, h in faces:
+        cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = img[y:y+h, x:x+w]
+        eyes = eye_cascade.detectMultiScale(roi_gray)
+        for ex, ey, ew, eh in eyes:
+            cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 2)
+
+
+def main():
+    cap = cv2.VideoCapture(0)
+    while cap.isOpened():
+        ret, frame = cap.read()
+        # frame = cv2.imread('file-path.jpg')  # from file
+        face_detect(frame)
+        cv2.imshow('frame', frame)
+        key = cv2.waitKey(1)
+        if key & 0xFF == 0o33:  # ESC
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()
