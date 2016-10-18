@@ -19,8 +19,8 @@ args = vars(ap.parse_args())
 
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space
-greenLower = (29, 86, 6)
-greenUpper = (64, 255, 255)
+greenLower = (30, 50, 50)
+greenUpper = (110, 255, 255)
 
 # initialize the list of tracked points, the frame counter,
 # and the coordinate deltas
@@ -42,6 +42,8 @@ else:
 while True:
     # grab the current frame
     (grabbed, frame) = camera.read()
+    frame = cv2.flip(frame,1)
+
 
     # if we are viewing a video and we did not grab a frame,
     # then we have reached the end of the video
@@ -95,7 +97,7 @@ while True:
 
         # check to see if enough points have been accumulated in
         # the buffer
-        if counter >= 10 and i == 1 and pts[-10] is not None:
+        if counter >= 10 and i == 1 and len(pts) >= 10 and pts[-10] is not None:
             # compute the difference between the x and y
             # coordinates and re-initialize the direction
             # text variables
