@@ -4,9 +4,14 @@
 
 import numpy as np
 import cv2
+import argparse
+
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('-i', '--input', help='Input file name', required=True)
+args = parser.parse_args()
 
 # Mat sudoku = imread("sudoku.jpg", 0);
-src = cv2.imread('sudoku.jpg', 0)   # Load an color image in grayscale
+src = cv2.imread(args.input, 0)   # Load an color image in grayscale
 
 # Mat outerBox = Mat(sudoku.size(), CV_8UC1);
 height = len(src)
